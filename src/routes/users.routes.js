@@ -21,6 +21,8 @@ router
 .get(userController.getUsers)
 .post(validate(createUserSchema,'body'),userController.createUser);
 
+router.get('/list/pagination', userController.getUsersPagination);
+
 router
 .route('/:id')
 .get(authenticateToken, userController.getUser)

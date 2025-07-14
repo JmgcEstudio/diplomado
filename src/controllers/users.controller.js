@@ -4,6 +4,7 @@ import {Task} from '../models/task.js';
 import logger from '../logs/logger.js';
 import { Status } from '../constants/index.js';
 import { encriptar } from '../common/bcrypt.js';
+import { Op } from 'sequelize';
 
 /*
 function getUsers(req,res){
@@ -150,6 +151,55 @@ async function getTasks(req,res,next) {
     
 }
 
+async function getUsersPagination(req, res, next) {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || '';
+        const orderBy = req.query.orderBy || 'id';
+        const orderDir = req.query.orderDir || 'DESC';
+
+        const allowedLimits = [5, 10, 15, 20];
+        const validLimit = allowedLimits.includes(limit) ? limit : 10;
+
+        const allowedOrderBy = ['id', 'username', 'status'];
+        const validOrderBy = allowedOrderBy.includes(orderBy) ? orderBy : 'id';
+
+        const validOrderDir = ['ASC', 'DESC'].includes(orderDir.toUpperCase()) ? orderDir.toUpperCase() : 'DESC';
+
+        const offset = (page - 1) * validLimit;
+
+        const whereConditions = {};
+        if (search) {
+            whereConditions.username = {
+                [Op.iLike]: `%${search}%` // ILIKE para búsqueda insensible a mayúsculas
+            };
+        }
+
+        const { count, rows } = await User.findAndCountAll({
+            where: whereConditions,
+            limit: validLimit,
+            offset: offset,
+            order: [[validOrderBy, validOrderDir]],
+            attributes: ['id', 'username', 'status']
+        });
+
+        const totalPages = Math.ceil(count / validLimit);
+
+        const response = {
+            total: count,
+            page: page,
+            pages: totalPages,
+            data: rows
+        };
+
+        res.status(200).json(response);
+
+    } catch (error) {
+        console.error('Error en getUsersPagination:', error);
+        next(error);
+    }
+}
 export default{
 getUsers,
 getUser,
@@ -157,5 +207,6 @@ createUser,
 updateUser,
 deleteUser,
 activateInactivate,
-getTasks
+getTasks,
+getUsersPagination
 };
