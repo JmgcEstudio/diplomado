@@ -19,6 +19,7 @@ const config={
     BCRYPT_SALT_ROUNDS: +process.env.BCRYPT_SALT_ROUNDS,
     JWT_SECRET:process.env.JWT_SECRET,
     JWT_EXPIRES_SECONDS:process.env.JWT_EXPIRES_SECONDS, 
+    DB_USE_SSL: process.env.DB_USE_SSL ?? false
     
   /*  PORT: process.env.PORT ?? 3000,
   DB_HOST: requiredEnv('DB_HOST'),
